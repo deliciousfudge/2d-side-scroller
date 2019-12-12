@@ -6,109 +6,133 @@ public class PlatformManager : MonoBehaviour
 {
     public static PlatformManager current;
 
-    public float movementSpeed = 5.0f;
+    public float movementSpeed = 7.0f;
     public PlatformSegment[] platformSegments;
     public float platformSpawnHeight = 0.0f;
     public float platformHorizBound = 0.0f;
 
     private Vector3 screenRightBound = new Vector3(10.0f, 0.0f, 0.0f);
     private PlatformSegment startingSegment = null;
+    private Vector3 startingSegmentPos;
+    private Vector3 availableSegmentPos;
+    private Vector3 segmentMovementDelta;
 
-    private List<PlatformSegment> availablePlatformSegments;
-    private Queue<PlatformSegment> movingPlatformSegments;
+    private bool canNewSegmentSpawn = true;
+
+    private List<PlatformSegment> availableSegments;
+    private Queue<PlatformSegment> activeSegments;
 
     private void Awake()
     {
+        // Create a single accessible instance of the class (singleton pattern)
         current = this;
 
-        availablePlatformSegments = new List<PlatformSegment>();
-        movingPlatformSegments = new Queue<PlatformSegment>();
+        availableSegments = new List<PlatformSegment>();
+        activeSegments = new Queue<PlatformSegment>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        startingSegmentPos = new Vector3(-2.0f, platformSpawnHeight, 0.0f);
+        availableSegmentPos = new Vector3(screenRightBound.x + 10.0f, platformSpawnHeight, 0.0f);
+        segmentMovementDelta = Vector3.right * movementSpeed;
+
+        // If there are platform segment 'blueprints' to use
         if (platformSegments.Length > 0)
         {
+            // Create an instance of each segment and store it ready for use
             foreach (PlatformSegment Segment in platformSegments)
             {
                 PlatformSegment SpawnedSegment = Instantiate(Segment) as PlatformSegment;
-                SpawnedSegment.transform.position = new Vector3(screenRightBound.x + 1.0f, platformSpawnHeight, 0.0f);
-                availablePlatformSegments.Add(SpawnedSegment);
+                SpawnedSegment.transform.position = availableSegmentPos;
+                availableSegments.Add(SpawnedSegment);
             }
 
-            // Move the first 
-            startingSegment = availablePlatformSegments[0];
-            startingSegment.transform.position = new Vector3(-2.0f, platformSpawnHeight, 0.0f);
-            movingPlatformSegments.Enqueue(startingSegment);
-            availablePlatformSegments.Remove(startingSegment);
+            // Always make sure that the simplest segment is the one first encountered by the player
+            startingSegment = availableSegments[0];
+            startingSegment.transform.position = startingSegmentPos;
+            activeSegments.Enqueue(startingSegment);
+            availableSegments.Remove(startingSegment);
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (movingPlatformSegments.Count > 0)
+        if (activeSegments.Count > 0)
         {
             PlatformSegment removedSegment = null;
             PlatformSegment newSegment = null;
             int newSegmentIndex = 0;
 
-            foreach (PlatformSegment segment in movingPlatformSegments)
+            foreach (PlatformSegment segment in activeSegments)
             {
+                segment.transform.position -= segmentMovementDelta * Time.deltaTime;
+
+                // If the segment has just been deactivated, don't bother processing it
+                if (!segment.isActiveAndEnabled)
+                {
+                    break;
+                }
+
+                // If the end of a segment has gone far enough off the left side of screen
                 if (segment.segmentEnd.position.x < -platformHorizBound)
                 {
-                    //print("Segment end reached the left bound");
+                    print("Reached left bound");
+                    // Deactivate the segment and move it into the pile of available segments on the right side of screen
                     segment.gameObject.SetActive(false);
-                    segment.transform.position = new Vector3(screenRightBound.x + 1.0f, platformSpawnHeight, 0.0f);
+                    print("Move to avail pile");
+                    segment.transform.position = availableSegmentPos;
                     removedSegment = segment;
                 }
 
-                if ((segment.segmentEnd.position.x < screenRightBound.x + 1.0f) && segment.segmentEnd.position.x > screenRightBound.x + 0.5f)
+                // If the end of the segment is just about to travel past the right side of the screen and a new segment can be spawned
+                else if ((segment.segmentEnd.position.x < screenRightBound.x + 5.0f) && canNewSegmentSpawn)
                 {
-                    print("New segment triggered when end pos x is: " + segment.segmentEnd.position.x);
-
-                    if (availablePlatformSegments.Count > 0)
+                    if (availableSegments.Count > 0)
                     {
-                        newSegmentIndex = Random.Range(0, availablePlatformSegments.Count);
-                        print("Index is " + newSegmentIndex);
-                        newSegment = availablePlatformSegments[newSegmentIndex];
+                        print("Spawned new");
+                        // Pick an available segment at random and place it immediately behind the segment above, ready for moving across the screen
+                        newSegmentIndex = Random.Range(0, availableSegments.Count);
+                        newSegment = availableSegments[newSegmentIndex];
+                        print("Move to spawn pos");
                         newSegment.transform.position = new Vector3(segment.segmentEnd.position.x + 1.0f, newSegment.transform.position.y, 0.0f);
-                        print("Set up new segment");
+                        newSegment.gameObject.SetActive(true);
+                        canNewSegmentSpawn = false;
                     }
                 }
-
-                segment.transform.position -= Vector3.right * movementSpeed * Time.deltaTime;
             }
 
             if (newSegment != null)
             {
-                newSegment.gameObject.SetActive(true);
-                movingPlatformSegments.Enqueue(availablePlatformSegments[newSegmentIndex]);
-                availablePlatformSegments.Remove(newSegment);
+                print("Swap moving to avail");
+                activeSegments.Enqueue(availableSegments[newSegmentIndex]);
+                availableSegments.Remove(newSegment);
             }
 
             if (removedSegment != null)
             {
-                movingPlatformSegments.Dequeue();
-
-                availablePlatformSegments.Add(removedSegment);
+                print("Swap avail to moving");
+                activeSegments.Dequeue();
+                availableSegments.Add(removedSegment);
+                canNewSegmentSpawn = true;
             }
         }
     }
 
     public void ResetPlatforms()
     {
-        foreach (PlatformSegment segment in movingPlatformSegments)
+        foreach (PlatformSegment segment in activeSegments)
         {
             segment.gameObject.SetActive(false);
-            segment.transform.position = new Vector3(screenRightBound.x + 1.0f, platformSpawnHeight, 0.0f);
+            segment.transform.position = availableSegmentPos;
 
-            availablePlatformSegments.Add(segment);
+            availableSegments.Add(segment);
         }
 
-        movingPlatformSegments.Clear();
-        startingSegment.transform.position = new Vector3(-2.0f, platformSpawnHeight, 0.0f);
-        movingPlatformSegments.Enqueue(startingSegment);
+        activeSegments.Clear();
+        startingSegment.transform.position = startingSegmentPos;
+        activeSegments.Enqueue(startingSegment);
     }
 }

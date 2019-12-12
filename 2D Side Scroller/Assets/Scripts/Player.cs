@@ -38,16 +38,19 @@ public class Player : MonoBehaviour
 
             if (isInAir)
             {
+                // If the player is falling
                 if (rBody.velocity.y < 0)
                 {
+                    // Increase their fall speed to make the jump feel snappier
                     rBody.velocity += Vector2.up * Physics2D.gravity.y * (FallMultiplier - 1);
                 }
             }
             else
             {
+                // If the player falls behind, steadily increase their speed to get them back to the center of the screen
                 if (transform.position.x < 0.0f)
                 {
-                    transform.position += new Vector3((0.0f - transform.position.x) * 0.05f, 0.0f, 0.0f);
+                    transform.position += new Vector3((0.0f - transform.position.x) * 0.01f, 0.0f, 0.0f);
                 }
             }
         }
