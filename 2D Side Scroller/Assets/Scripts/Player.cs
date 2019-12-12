@@ -33,14 +33,21 @@ public class Player : MonoBehaviour
     {
         if (!IsDead)
         {
-            DistanceRun += Mathf.RoundToInt(Time.deltaTime * 20.0f);
-            print("Distance Run: " + DistanceRun);
+            //DistanceRun += Mathf.RoundToInt(Time.deltaTime * 20.0f);
+            //print("Distance Run: " + DistanceRun);
 
             if (isInAir)
             {
                 if (rBody.velocity.y < 0)
                 {
                     rBody.velocity += Vector2.up * Physics2D.gravity.y * (FallMultiplier - 1);
+                }
+            }
+            else
+            {
+                if (transform.position.x < 0.0f)
+                {
+                    transform.position += new Vector3((0.0f - transform.position.x) * 0.05f, 0.0f, 0.0f);
                 }
             }
         }

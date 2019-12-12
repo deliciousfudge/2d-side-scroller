@@ -30,5 +30,6 @@ public class EventManager : MonoBehaviour
     {
         // Invoke the player killed action if it has methods subscribed to it
         OnPlayerKilled?.Invoke();
+        PlatformManager.current.ResetPlatforms();
     }
 }
