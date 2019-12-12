@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Platform : MonoBehaviour
 {
-    public float movementSpeed = 5.0f;
+    public float movementSpeed = 10.0f;
 
     private Vector3 startingPos;
 

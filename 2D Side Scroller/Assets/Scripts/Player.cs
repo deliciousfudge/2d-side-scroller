@@ -8,18 +8,24 @@ public class Player : MonoBehaviour
     // Properties
     public float DistanceRun { set; get; } = 0;
     public bool IsDead { set; get; } = false;
+    public float JumpForce { set; get; } = 6.0f;
+    public float FallMultiplier { set; get; } = 1.2f;
+
+    private bool isInAir = false;
 
     private SpriteRenderer spriteRenderer;
+    private Rigidbody2D rBody;
 
     void OnEnable()
     {
-        EventManager.current.OnPlayerKilled += InvokeDeath;
+        EventManager.current.OnPlayerKilled += Die;
     }
 
     // Start is called before the first frame update
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        rBody = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -29,20 +35,51 @@ public class Player : MonoBehaviour
         {
             DistanceRun += Mathf.RoundToInt(Time.deltaTime * 20.0f);
             print("Distance Run: " + DistanceRun);
+
+            if (isInAir)
+            {
+                if (rBody.velocity.y < 0)
+                {
+                    rBody.velocity += Vector2.up * Physics2D.gravity.y * (FallMultiplier - 1);
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonDown(0) && isInAir == false)
+        {
+            isInAir = true;
+            Jump();
         }
     }
 
-    public void InvokeSpawn()
+    public void Respawn()
     {
         DistanceRun = 0;
         transform.position = Vector3.zero;
+        isInAir = false;
     }
 
-    public void InvokeDeath()
+    public void Die()
     {
         print("Dead as a dodo");
         //IsDead = true;
         //spriteRenderer.enabled = false;
-        InvokeSpawn();
+        Respawn();
+    }
+
+    public void Jump()
+    {
+        rBody.AddForce(Vector2.up * JumpForce, ForceMode2D.Impulse);
+    }
+
+    private void OnCollisionEnter2D(Collision2D _collision)
+    {
+        if (_collision.gameObject.tag == "Platform")
+        {
+            if (isInAir)
+            {
+                isInAir = false;
+            }
+        }
     }
 }
