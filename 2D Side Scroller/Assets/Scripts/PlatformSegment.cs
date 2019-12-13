@@ -6,6 +6,8 @@ public class PlatformSegment : MonoBehaviour
 {
     public Transform segmentStart;
     public Transform segmentEnd;
+    public GameObject[] coins;
+    public GameObject[] obstacles;
 
     // Start is called before the first frame update
     void Start()
@@ -17,5 +19,13 @@ public class PlatformSegment : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void GenerateCoins()
+    {
+        foreach(GameObject coin in coins)
+        {
+            coin.SetActive(true);
+        }
     }
 }

@@ -25,6 +25,6 @@ public class DeathCollider : MonoBehaviour
     public void OnTriggerEnter2D(Collider2D other)
     {
         print("Hit death collider");
-        EventManager.current.PlayerKilled();
+        GameManager.current.PlayerKilled();
     }
 }
