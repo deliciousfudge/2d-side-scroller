@@ -6,8 +6,10 @@ TagManager:
   tags:
   - Platform
   - Coin
-  - PlatformSegmentLeft
-  - PlatformSegmentRight
+  - Obstacle
+  - DeathCollider
+  - PlatformSegmentStart
+  - PlatformSegmentEnd
   layers:
   - Default
   - TransparentFX
