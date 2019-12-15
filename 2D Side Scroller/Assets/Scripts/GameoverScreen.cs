@@ -9,13 +9,16 @@ public class GameoverScreen : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        buttonRetry = GetComponentInChildren<Button>();
-        buttonRetry.onClick.AddListener(GameManager.current.PlayerRespawned);
+        //buttonRetry = GetComponentInChildren<Button>();
+        //buttonRetry.onClick.AddListener(GameManager.current.PlayerRespawned);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButtonDown(0))
+        {
+            GameManager.current.PlayerRespawned();
+        }
     }
 }

@@ -7,10 +7,10 @@ public class Player : MonoBehaviour
 {
     // Properties
     public bool IsDead { set; get; } = false;
-    public float FallMultiplier { set; get; } = 1.4f;
 
     // Fields
     public float jumpForce = 8.5f;
+    public float fallMultiplier = 1.2f;
     public Vector3 playerSpawnPosition = new Vector3(-8.0f, 0.0f, 0.0f);
     public AudioClip sfxJumpSound;
     public AudioClip sfxLandingSound;
@@ -46,13 +46,16 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (!isJumping && !isFalling)
+        if (!IsDead)
         {
-            // If the player touches the screen
-            if (Input.GetMouseButtonDown(0))
+            if (!isJumping && !isFalling)
             {
-                // Play the jump animation and carry out a jump
-                ChangeJumpState(true);
+                // If the player touches the screen
+                if (Input.GetMouseButtonDown(0))
+                {
+                    // Play the jump animation and carry out a jump
+                    ChangeJumpState(true);
+                }
             }
         }
     }
@@ -74,7 +77,7 @@ public class Player : MonoBehaviour
                     }
 
                     // Increase their fall speed to make the jump feel snappier
-                    rBody.velocity += Vector2.up * Physics2D.gravity.y * (FallMultiplier - 1);
+                    rBody.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1);
                 }
             }
 
