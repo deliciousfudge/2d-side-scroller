@@ -5,18 +5,24 @@ using UnityEngine;
 public class PlatformSegment : MonoBehaviour
 {
     // Fields
-    public Transform segmentStart;
-    public Transform segmentEnd;
-    public GameObject[] coins;
-    public GameObject[] obstacles;
+    public Transform segmentStart; // The left bound location of the segment
+    public Transform segmentEnd; // The right bound location of the segment
+    public GameObject[] coins; // An array of coin instances displayed in the level
+    public GameObject[] obstacles; // An array of obstacle instances displayed in the level
 
     private List<GameObject> coinList;
 
+    /// <summary>
+    /// Processes gameplay logic immediately after objects are initialized
+    /// </summary>
     void Awake()
     {
         coinList = new List<GameObject>();
     }
 
+    /// <summary>
+    /// Picks a random number of coins to be displayed on the segment
+    /// </summary>
     public void GenerateCoins()
     {
         // Randomly shuffle the array of coins
@@ -36,6 +42,9 @@ public class PlatformSegment : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Picks a random number of obstacles to be displayed on the segment
+    /// </summary>
     public void GenerateObstacles()
     {
         // Randomly shuffle the array of coins
@@ -55,6 +64,12 @@ public class PlatformSegment : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Method used to pick one of two GameObjects at random. Used in conjunction with the coins and obstacles arrays to randomly shuffle their contents.
+    /// </summary>
+    /// <param name="_A">The first GameObject instance to choose from</param>
+    /// <param name="_B">The second GameObject instance to choose from</param>
+    /// <returns>The index (either 0 or 1) of the GameObject to select</returns>
     private int RandomSort(GameObject _A, GameObject _B)
     {
         return Random.Range(-1, 2);

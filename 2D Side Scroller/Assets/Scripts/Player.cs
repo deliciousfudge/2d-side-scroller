@@ -6,18 +6,18 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     // Properties
-    public bool IsDead { set; get; } = false;
+    public bool IsDead { set; get; } = false; // Tracks whether the player has been killed
 
     // Fields
-    public float jumpForce = 8.5f;
-    public float fallMultiplier = 1.2f;
-    public Vector3 playerSpawnPosition = new Vector3(-8.0f, 0.0f, 0.0f);
-    public AudioClip sfxJumpSound;
-    public AudioClip sfxLandingSound;
-    private bool isJumping = false;
-    private bool isFalling = false;
-    private float distanceToGround = 0.0f;
-    private Vector3 extents;
+    public float jumpForce = 8.5f; // The amount of upward impulse applied to the player when starting a jump
+    public float jumpDelayMax = 0.2f; // The time (in seconds) allowed to pass between tapping the screen and having the player jump
+    public float fallMultiplier = 1.2f; // The gravity factor applied to the player when falling
+    public Vector3 playerSpawnPosition = new Vector3(-8.0f, 0.0f, 0.0f); // The initial spawn location of the player
+    public AudioClip sfxJumpSound; // The sound played when the player begins a jump
+
+    private bool isJumping = false; // Whether the player is in the middle of a jump
+    private bool isFalling = false; // Whether the player is falling downward
+    private float timeSinceJumpPressed = 5.0f; // The amount of time (in seconds) since the player tapped the screen to jump
 
     // Components
     private SpriteRenderer spriteRenderer;
@@ -25,6 +25,9 @@ public class Player : MonoBehaviour
     private AudioSource sfxAudioPlayer;
     private Animator animator;
 
+    /// <summary>
+    /// Processes gameplay logic when the class gameobject has become enabled and active
+    /// </summary>
     void OnEnable()
     {
         // Connect the die and respawn methods to the appropriate event delegates
@@ -32,6 +35,9 @@ public class Player : MonoBehaviour
         GameManager.current.OnPlayerRespawned += Respawn;
     }
 
+    /// <summary>
+    /// Processes gameplay logic prior to the first frame being displayed
+    /// </summary>
     void Start()
     {
         // Create a reference to any components that will be interacted with later
@@ -39,32 +45,46 @@ public class Player : MonoBehaviour
         rBody = GetComponent<Rigidbody2D>();
         sfxAudioPlayer = GetComponent<AudioSource>();
         animator = GetComponent<Animator>();
-
-        distanceToGround = GetComponent<BoxCollider2D>().bounds.extents.y + 0.2f;
-        extents = GetComponent<BoxCollider2D>().bounds.extents * 1.5f;
     }
 
+    /// <summary>
+    /// Updates gameplay logic any time a new frame is displayed to the screen
+    /// </summary>
     void Update()
     {
         if (!IsDead)
         {
+            // If the player is on the ground
             if (!isJumping && !isFalling)
             {
                 // If the player touches the screen
-                if (Input.GetMouseButtonDown(0))
+                if (timeSinceJumpPressed < jumpDelayMax)
                 {
                     // Play the jump animation and carry out a jump
                     ChangeJumpState(true);
                 }
             }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                timeSinceJumpPressed = 0.0f;
+            }
+            else
+            {
+                timeSinceJumpPressed += Time.deltaTime;
+            }
+
+
         }
     }
+
+    /// <summary>
+    /// Updates gameplay logic on a fixed timestep when in-game physics are being processed
+    /// </summary>
     void FixedUpdate()
     {
-        // If the player is alive
         if (!IsDead)
         {
-            // If the player is in the middle of a jump
             if (isJumping)
             {
                 // If the player is moving downwards
@@ -162,24 +182,16 @@ public class Player : MonoBehaviour
         animator.SetBool("isFalling", _isFalling);
     }
 
-    private bool IsOnGround()
-    {
-        //return Physics.CheckBox(transform.position, extents);
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector3.up, distanceToGround);
-
-        if (hit.collider.tag == "Platform")
-        {
-            return true;
-        }
-
-        return false;
-    }
-
+    /// <summary>
+    /// Event that is called when the gameobject enters a collision
+    /// </summary>
+    /// <param name="_collision">The result of the collision</param>
     private void OnCollisionEnter2D(Collision2D _collision)
     {
         // If the player collides with a platform
-        if (_collision.gameObject.tag == "Platform")
+        if (_collision.gameObject.tag == "PlatformSegment")
         {
+            print("hit the platform");
             // If the player has just touched down after a jump
             if (isFalling)
             {
@@ -195,6 +207,27 @@ public class Player : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Event that is called when the gameobject exits a collision
+    /// </summary>
+    /// <param name="_collision">The result of the collision</param>
+    private void OnCollisionExit2D(Collision2D _collision)
+    {
+        // If the player leaves a platform
+        if (_collision.gameObject.tag == "PlatformSegment")
+        {
+            // If the player has just touched down after a jump
+            if (!isFalling && !isJumping)
+            {
+                ChangeFallState(true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Event that is called when the gameobject enters a trigger
+    /// </summary>
+    /// <param name="_other">The collider component of the trigger</param>
     private void OnTriggerEnter2D(Collider2D _other)
     {
         // If the player has run into a coin

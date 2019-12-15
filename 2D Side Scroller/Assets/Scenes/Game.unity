@@ -390,7 +390,6 @@ MonoBehaviour:
   - {fileID: 7549393048209979291, guid: a22cd1f34e0c37b4396463659cd388d0, type: 3}
   - {fileID: 4210447089125518874, guid: 3d7f6120c63328241939c064f99d3e25, type: 3}
   platformSpawnHeight: -5.7
-  platformHorizBound: 10
   gapBetweenPlatforms: 4
 --- !u!1 &863861713
 GameObject:
@@ -700,7 +699,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1554269461}
-  uiInstructions: {fileID: 0}
   uiGameover: {fileID: 1426357922}
   musicClipGameplay: {fileID: 8300000, guid: fe0d567b47a2fd84a8f67ad47d58e9c9, type: 3}
   musicClipGameover: {fileID: 8300000, guid: 34e0d1aa614f17b48a58bd4d676a93ce, type: 3}
@@ -979,11 +977,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1f72c49e9780c4eaacbdb2922b7ea3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpForce: 8
-  fallMultiplier: 1.5
+  jumpForce: 7.5
+  jumpDelayMax: 0.2
+  fallMultiplier: 1.1
   playerSpawnPosition: {x: -7.5, y: 0, z: 0}
   sfxJumpSound: {fileID: 8300000, guid: f3d4c2b19913aea4694d16f2c0aca71b, type: 3}
-  sfxLandingSound: {fileID: 8300000, guid: 816903057e367334b9b26429c18bfc63, type: 3}
 --- !u!82 &1554269468
 AudioSource:
   m_ObjectHideFlags: 0

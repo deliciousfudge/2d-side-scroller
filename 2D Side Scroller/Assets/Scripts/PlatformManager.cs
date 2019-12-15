@@ -5,21 +5,23 @@ using UnityEngine;
 public class PlatformManager : MonoBehaviour
 {
     // Fields
-    public static PlatformManager current;
+    public static PlatformManager current; // A reference to the single accessible instance of the class
 
-    public float movementSpeed = 7.0f;
-    public PlatformSegment[] platformSegments;
-    public float platformSpawnHeight = 0.0f;
-    public float platformHorizBound = 0.0f;
-    public float gapBetweenPlatforms = 2.0f;
+    public float movementSpeed = 7.0f; // How fast each platform segment moves across the screen
+    public PlatformSegment[] platformSegments; // The platform segment 'blueprints' to spawn instances of
+    public float platformSpawnHeight = 0.0f; // The Y position to spawn each segment at
+    public float gapBetweenPlatforms = 2.0f; // How far apart each platform segment is spawned
 
-    private Vector3 screenRightBound = new Vector3(10.0f, 0.0f, 0.0f);
-    private PlatformSegment startingSegment = null;
-    private Vector3 startingSegmentPos;
-    private Vector3 availableSegmentPos;
-    private List<PlatformSegment> availableSegments;
-    private List<PlatformSegment> activeSegments;
+    private Vector3 screenRightBound = new Vector3(10.0f, 0.0f, 0.0f); // The location of the right side of the screen
+    private PlatformSegment startingSegment = null; // A reference to the segment always displayed first
+    private Vector3 startingSegmentPos; // The location where the starting segment is spawned at the beginning of play
+    private Vector3 availableSegmentPos; // The location where segments are stored when not in use
+    private List<PlatformSegment> availableSegments; // Stores segment instances that are being stored when not in use
+    private List<PlatformSegment> activeSegments; // Stores segment instances that are in use and being moved across the screen
 
+    /// <summary>
+    /// Processes gameplay logic immediately after objects are initialized
+    /// </summary>
     private void Awake()
     {
         // Create a single accessible instance of the class (singleton pattern)
@@ -29,9 +31,12 @@ public class PlatformManager : MonoBehaviour
         activeSegments = new List<PlatformSegment>();
     }
 
-    // Start is called before the first frame update
+    /// <summary>
+    /// Processes gameplay logic prior to the first frame being displayed
+    /// </summary>
     void Start()
     {
+        // Store the location
         startingSegmentPos = new Vector3(-screenRightBound.x, platformSpawnHeight, 0.0f);
         availableSegmentPos = new Vector3(screenRightBound.x + 10.0f, platformSpawnHeight, 0.0f);
 
@@ -53,7 +58,9 @@ public class PlatformManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Updates gameplay logic any time a new frame is displayed to the screen
+    /// </summary>
     void Update()
     {
         if (activeSegments.Count > 0)
@@ -103,9 +110,11 @@ public class PlatformManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Transfers each active segment into the available segments list off screen and make them inactive
+    /// </summary>
     public void DisablePlatforms()
     {
-        // Transfer each active segment into the available segments list off screen and make them inactive
         if (activeSegments.Count > 0)
         {
             foreach (PlatformSegment segment in activeSegments)
@@ -118,24 +127,33 @@ public class PlatformManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Transfers the starting segment into the active segments list, which kickstarts the segment movement process
+    /// </summary>
     public void EnablePlatforms()
     {
-        // Make the starting segment active, which will result in subsequent segments being added later on
         startingSegment.transform.position = startingSegmentPos;
         startingSegment.GenerateCoins();
         startingSegment.GenerateObstacles();
         startingSegment.gameObject.SetActive(true);
 
-        // Transfer the starting segment into the active segments list
         TransferSegmentToActive(startingSegment);
     }
 
+    /// <summary>
+    /// Transfers a segment instance from available to active
+    /// </summary>
+    /// <param name="_segment">A reference to the platform segment to transfer</param>
     public void TransferSegmentToActive(PlatformSegment _segment)
     {
         activeSegments.Add(_segment);
         availableSegments.Remove(_segment);
     }
 
+    /// <summary>
+    /// Transfers a segment instance from active to available
+    /// </summary>
+    /// <param name="_segment">A reference to the platform segment to transfer</param>
     public void TransferSegmentToAvailable(PlatformSegment _segment)
     {
         availableSegments.Add(_segment);

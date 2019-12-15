@@ -10,6 +10,7 @@ TagManager:
   - DeathCollider
   - PlatformSegmentStart
   - PlatformSegmentEnd
+  - PlatformSegment
   layers:
   - Default
   - TransparentFX
